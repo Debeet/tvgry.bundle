@@ -1,0 +1,84 @@
+# -*- coding: utf-8 -*-
+
+BASE_URL = 'http://tvgry.pl'
+METADATA_URL = '%s/video/source.v2.asp?SC=TV&id=' % (BASE_URL)
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36'
+
+def MetadataObjectForURL(url):
+
+	months = [('stycznia', 'January'), ('lutego', 'February'), ('marca', 'March'), ('kwietnia', 'April'), ('maja', 'May'), ('czerwca', 'June'), ('lipca', 'July'), ('sierpnia', 'August'), ('września', 'September'), ('października', 'October'), ('listopada', 'November'), ('grudnia', 'December')]
+
+	#clip_id = url[25:]
+
+	# Request the URL
+	page = HTML.ElementFromURL(url, encoding = 'cp1250', cacheTime = CACHE_1HOUR, headers = {'User-Agent': USER_AGENT})
+	
+	# Extract the details available directly form the page.
+	title = page.xpath("//h2[@itemprop='name']")[0].text_content()
+	tagline = page.xpath("//p[@itemprop='text']")[0].text_content()
+	summary = page.xpath("//p[@itemprop='description']")[0].text_content()
+	thumb = page.xpath("//link[@rel='image_src']")[0].get('href')
+	art = thumb.replace('N640', 'N1280')
+	tags = page.xpath("//p[@class='topics']")
+	tags_list = []
+	if (len(tags) > 0):
+		for tag in tags:
+			tags_list.append(tag.text_content())
+	likes = float(page.xpath("//a[@class='plus']")[0].text_content())
+	dislikes = float(page.xpath("//a[@class='minus']")[0].text_content())
+	rating = abs((dislikes / likes * 10) - 10)
+	duration = page.xpath("//span[@itemprop='duration']/span[1]")[0].text_content().split(':')
+	duration_ms = (int(duration[0]) * 60 + int(duration[1])) * 1000
+
+	originally_available_at = page.xpath("//span[@itemprop='uploadDate']/span[1]")[0].text_content()
+	
+	for search, replace in months:
+		originally_available_at = originally_available_at.replace(search, replace)
+	
+	originally_available_at = Datetime.ParseDate(originally_available_at).date()
+
+	return VideoClipObject(
+		title = title,
+		tagline = tagline,
+		summary = summary,
+		thumb = thumb,
+		art = art,
+		tags = tags_list,
+		rating = rating,
+		duration = duration_ms,
+		originally_available_at = originally_available_at)
+
+def MediaObjectsForURL(url):
+
+	return [
+		MediaObject(
+			#video_codec = VideoCodec.AVC,
+			audio_codec = AudioCodec.AAC,
+			audio_channels = 2,
+			#video_resolution = 1080,
+			video_resolution = 720,
+			video_frame_rate = '29.97',
+			aspect_ratio = '1.78',
+			container = 'mp4',
+			optimized_for_streaming = True,
+			parts = [PartObject(key=Callback(PlayVideo, url = url))]
+		)
+	]
+	
+def PlayVideo(url):
+ 
+	clip_id = url[20:]
+	
+	#Log(url)
+	#Log(clip_id)
+
+	# Request the URL
+	page = XML.ElementFromURL(METADATA_URL + clip_id, encoding = 'cp1250', cacheTime = CACHE_1HOUR, headers = {'User-Agent': USER_AGENT})
+	
+	HTML.Headers = {'User-Agent': USER_AGENT, 'Referer': 'http://tvgry.pl/'}
+ 
+	# Get the video URL
+	video_url = page.xpath("//*[name()='jwplayer:source']")[-2].get('file')
+ 
+	return Redirect(video_url)
+	#return IndirectResponse(VideoClipObject, key=video_url)

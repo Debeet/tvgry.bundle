@@ -8,10 +8,8 @@ def MetadataObjectForURL(url):
 
 	months = [('stycznia', 'January'), ('lutego', 'February'), ('marca', 'March'), ('kwietnia', 'April'), ('maja', 'May'), ('czerwca', 'June'), ('lipca', 'July'), ('sierpnia', 'August'), ('września', 'September'), ('października', 'October'), ('listopada', 'November'), ('grudnia', 'December')]
 
-	#clip_id = url[25:]
-
 	# Request the URL
-	page = HTML.ElementFromURL(url, encoding = 'cp1250', cacheTime = CACHE_1HOUR, headers = {'User-Agent': USER_AGENT})
+	page = HTML.ElementFromURL(url, encoding = 'cp1250', cacheTime = CACHE_1WEEK, headers = {'User-Agent': USER_AGENT})
 	
 	# Extract the details available directly form the page.
 	title = page.xpath("//h2[@itemprop='name']")[0].text_content()
@@ -41,7 +39,7 @@ def MetadataObjectForURL(url):
 		title = title,
 		tagline = tagline,
 		summary = summary,
-		thumb = thumb,
+		thumb = art,
 		art = art,
 		tags = tags_list,
 		rating = rating,
@@ -57,7 +55,7 @@ def MediaObjectsForURL(url):
 			audio_channels = 2,
 			#video_resolution = 1080,
 			video_resolution = 720,
-			video_frame_rate = '29.97',
+			#video_frame_rate = '29.97',
 			aspect_ratio = '1.78',
 			container = 'mp4',
 			optimized_for_streaming = True,
@@ -70,7 +68,7 @@ def PlayVideo(url):
 	clip_id = url[20:]
 
 	# Request the URL
-	page = XML.ElementFromURL(METADATA_URL + clip_id, encoding = 'cp1250', cacheTime = CACHE_1HOUR, headers = {'User-Agent': USER_AGENT})
+	page = XML.ElementFromURL(METADATA_URL + clip_id, encoding = 'cp1250', cacheTime = CACHE_1WEEK, headers = {'User-Agent': USER_AGENT})
 	
 	HTML.Headers = {'User-Agent': USER_AGENT, 'Referer': 'http://tvgry.pl/'}
  

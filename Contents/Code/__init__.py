@@ -23,7 +23,7 @@ def Start():
 	ObjectContainer.title2 = 'Telewizja dla graczy'
 	ObjectContainer.user_agent = USER_AGENT
 	
-	HTTP.CacheTime = CACHE_1HOUR
+	HTTP.CacheTime = CACHE_1WEEK
 	HTTP.Headers['User-Agent'] = USER_AGENT
 	HTTP.Headers['Referer'] = 'http://tvgry.pl/'
 	
@@ -71,7 +71,7 @@ def TopicsList(page_no):
 			DirectoryObject(
 				key = Callback(Topic, url = url, page_no = 1),
 				title = title,
-				thumb = thumb,
+				thumb = thumb.replace('N300', 'N1280'),
 				art = thumb.replace('N300', 'N1280')
 			)
 		)
@@ -90,7 +90,7 @@ def TopicsList(page_no):
 			DirectoryObject(
 				key = Callback(Topic, url = url, page_no = 1),
 				title = title,
-				thumb = thumb,
+				thumb = thumb.replace('N460', 'N1280'),
 				art = thumb.replace('N460', 'N1280'),
 				tagline = lead
 			)
@@ -134,7 +134,7 @@ def Topic(url, page_no):
 				url = video_url,
 				title = title,
 				tagline = lead,
-				thumb = Resource.ContentsOfURLWithFallback(thumb),
+				thumb = Resource.ContentsOfURLWithFallback(art),
 				art = Resource.ContentsOfURLWithFallback(art)
 			)
 		)
@@ -169,7 +169,7 @@ def MainPage(page_no, popular = False):
 		title = movie.xpath(".//h2[contains(@itemprop, 'name')]")[0].text_content().strip()
 		summary = movie.xpath(".//p[contains(@itemprop, 'description')]")[0].text_content().strip()
 		art_url = movie.xpath(".//img")[0].get('src')
-		thumb_url = art_url.replace('N960', 'N460')
+		thumb_url = art_url.replace('N960', 'N1280')
 	
 		dir.add(
 			VideoClipObject(

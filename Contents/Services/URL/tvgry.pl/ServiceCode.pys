@@ -50,29 +50,65 @@ def MediaObjectsForURL(url):
 
 	return [
 		MediaObject(
-			#video_codec = VideoCodec.AVC,
 			audio_codec = AudioCodec.AAC,
 			audio_channels = 2,
-			#video_resolution = 1080,
-			video_resolution = 720,
-			#video_frame_rate = '29.97',
-			aspect_ratio = '1.78',
+			video_resolution = 1080,
+			video_codec = VideoCodec.H264,
 			container = 'mp4',
 			optimized_for_streaming = True,
-			parts = [PartObject(key=Callback(PlayVideo, url = url))]
+			parts = [PartObject(key=Callback(PlayVideo, url = url, format = '1080p'))]
+		),
+		MediaObject(
+			audio_codec = AudioCodec.AAC,
+			audio_channels = 2,
+			video_resolution = 720,
+			video_codec = VideoCodec.H264,
+			container = 'mp4',
+			optimized_for_streaming = True,
+			parts = [PartObject(key=Callback(PlayVideo, url = url, format = '720p'))]
+		),
+		MediaObject(
+			audio_codec = AudioCodec.AAC,
+			audio_channels = 2,
+			video_resolution = 540,
+			video_codec = VideoCodec.H264,
+			container = 'mp4',
+			optimized_for_streaming = True,
+			parts = [PartObject(key=Callback(PlayVideo, url = url, format = 'SD'))]
+		),
+		MediaObject(
+			audio_codec = AudioCodec.AAC,
+			audio_channels = 2,
+			video_resolution = 360,
+			video_codec = VideoCodec.H264,
+			container = 'mp4',
+			optimized_for_streaming = True,
+			parts = [PartObject(key=Callback(PlayVideo, url = url, format = 'Mobile'))]
 		)
 	]
 	
-def PlayVideo(url):
- 
-	clip_id = url[20:]
+def PlayVideo(url, format):
 
-	# Request the URL
-	page = XML.ElementFromURL(METADATA_URL + clip_id, encoding = 'cp1250', cacheTime = CACHE_1WEEK, headers = {'User-Agent': USER_AGENT})
+	clip_id = url[20:]
 	
-	HTML.Headers = {'User-Agent': USER_AGENT, 'Referer': 'http://tvgry.pl/'}
- 
+	# Request the URL
+	page = XML.ElementFromURL(METADATA_URL + clip_id, encoding = 'cp1250', cacheTime = CACHE_1DAY, headers = {'User-Agent': USER_AGENT})
+
+	if (format == '1080p'):
+		index = -1
+		# 1080p isn't always available
+		if (page.xpath("//*[name()='jwplayer:xl']")[0].text != '1'):
+			index = -2
+	elif (format == '720p'):
+		index = -2
+	elif (format == 'SD'):
+		index = -3
+	elif (format == 'Mobile'):
+		index = -4
+	else:
+		index = -3
+
 	# Get the video URL
-	video_url = page.xpath("//*[name()='jwplayer:source']")[-2].get('file')
- 
+	video_url = page.xpath("//*[name()='jwplayer:source']")[index].get('file')
+
 	return Redirect(video_url)

@@ -2,7 +2,7 @@
 
 BASE_URL = 'http://tvgry.pl'
 METADATA_URL = '%s/video/source.v2.asp?SC=TV&id=' % (BASE_URL)
-USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'
 
 def MetadataObjectForURL(url):
 
@@ -68,9 +68,6 @@ def MediaObjectsForURL(url):
 def PlayVideo(url):
  
 	clip_id = url[20:]
-	
-	#Log(url)
-	#Log(clip_id)
 
 	# Request the URL
 	page = XML.ElementFromURL(METADATA_URL + clip_id, encoding = 'cp1250', cacheTime = CACHE_1HOUR, headers = {'User-Agent': USER_AGENT})
@@ -81,4 +78,3 @@ def PlayVideo(url):
 	video_url = page.xpath("//*[name()='jwplayer:source']")[-2].get('file')
  
 	return Redirect(video_url)
-	#return IndirectResponse(VideoClipObject, key=video_url)

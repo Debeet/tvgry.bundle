@@ -2,7 +2,7 @@ NAME = 'tvgry.pl'
 BASE_URL = 'http://tvgry.pl'
 GUIDE_URL = '%s/ajax/waypoint.asp?PART=1' % (BASE_URL)
 TEMATY_URL = '%s/tematy.asp' % (BASE_URL)
-USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'
 
 import re
 
@@ -42,14 +42,22 @@ def TopicsList(page_no):
 	dir = ObjectContainer()
 	
 	page_url = TEMATY_URL + '?STRONA=' + str(page_no) if page_no > 1 else TEMATY_URL
-	page = HTML.ElementFromURL(page_url, encoding = 'cp1250', cacheTime = CACHE_1HOUR, headers = {'User-Agent': USER_AGENT})
+	page = HTML.ElementFromURL(page_url, encoding = 'cp1250', cacheTime = 0)
 	
 	if page_no < 2:
 		dir.add(
 			DirectoryObject(
-				key = Callback(Newest, page_no = 1),
+				key = Callback(MainPage, page_no = 1),
 				title = 'Najnowsze',
-				thumb = R('icon-default.png'),
+				thumb = R('newest.png'),
+				art = R('art-default.jpg')
+			)
+		)
+		dir.add(
+			DirectoryObject(
+				key = Callback(MainPage, page_no = 1, popular = True),
+				title = 'Popularne',
+				thumb = R('popular.png'),
 				art = R('art-default.jpg')
 			)
 		)
@@ -108,7 +116,7 @@ def Topic(url, page_no):
 	dir = ObjectContainer()
 	
 	page_url = BASE_URL + '/' + url + '&STRONA=' + str(page_no) if page_no > 1 else BASE_URL + '/' + url
-	page = HTML.ElementFromURL(page_url, encoding = 'cp1250', cacheTime = CACHE_1HOUR, headers = {'User-Agent': USER_AGENT})
+	page = HTML.ElementFromURL(page_url, encoding = 'cp1250', cacheTime = 0)
 	
 	for cat in page.xpath("//div[contains(@class, 'half-box promo')]"):
 		title = RemoveCounts(cat.xpath(".//h2")[0].text_content().strip())
@@ -147,18 +155,21 @@ def Topic(url, page_no):
 
 	return dir
 	
-def Newest(page_no):
+def MainPage(page_no, popular = False):
 	dir = ObjectContainer()
+	
+	if (page_no == 1):
+		HTTP.Headers['Cookie'] = 'typlisty=1' if popular else ''
 
 	page_url = BASE_URL + '/ajax/waypoint.asp?PART=' + str(page_no) if page_no > 1 else BASE_URL
-	page = HTML.ElementFromURL(page_url, encoding = 'cp1250', cacheTime = CACHE_1HOUR, headers = {'User-Agent': USER_AGENT})
-	
+	page = HTML.ElementFromURL(page_url, encoding = 'cp1250', cacheTime = 0)
+
 	for movie in page.xpath("//div[contains(@id, 'movie-cnt-c-')]"):
 		video_url = BASE_URL + movie.xpath(".//a[contains(@class, 'movie-link')]")[0].get('href')
 		title = movie.xpath(".//h2[contains(@itemprop, 'name')]")[0].text_content().strip()
 		summary = movie.xpath(".//p[contains(@itemprop, 'description')]")[0].text_content().strip()
 		art_url = movie.xpath(".//img")[0].get('src')
-		thumb_url = art_url.replace('N960', 'N300')
+		thumb_url = art_url.replace('N960', 'N460')
 	
 		dir.add(
 			VideoClipObject(
@@ -172,7 +183,7 @@ def Newest(page_no):
 		
 	dir.add(
 		NextPageObject(
-			key = Callback(Newest, page_no = page_no + 1),
+			key = Callback(MainPage, page_no = page_no + 1, popular = popular),
 			title = 'Dalej...'
 		)
 	)

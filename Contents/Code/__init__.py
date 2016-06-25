@@ -2,7 +2,7 @@ NAME = 'tvgry.pl'
 BASE_URL = 'http://tvgry.pl'
 GUIDE_URL = '%s/ajax/waypoint.asp?PART=1' % (BASE_URL)
 TEMATY_URL = '%s/tematy.asp' % (BASE_URL)
-USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36'
 
 import re
 

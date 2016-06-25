@@ -2,7 +2,7 @@
 
 BASE_URL = 'http://tvgry.pl'
 METADATA_URL = '%s/video/source.v2.asp?SC=TV&id=' % (BASE_URL)
-USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36'
 
 def MetadataObjectForURL(url):
 
@@ -12,9 +12,9 @@ def MetadataObjectForURL(url):
 	page = HTML.ElementFromURL(url, encoding = 'cp1250', cacheTime = CACHE_1WEEK, headers = {'User-Agent': USER_AGENT})
 	
 	# Extract the details available directly form the page.
-	title = page.xpath("//h2[@itemprop='name']")[0].text_content()
-	tagline = page.xpath("//p[@itemprop='text']")[0].text_content()
-	summary = page.xpath("//p[@itemprop='description']")[0].text_content()
+	title = page.xpath("//h2")[0].text_content()
+	tagline = page.xpath("//p[@class='lead']")[0].text_content()
+	summary = page.xpath("//p[@class='short-desc']")[0].text_content()
 	thumb = page.xpath("//link[@rel='image_src']")[0].get('href')
 	art = thumb.replace('N640', 'N1280')
 	tags = page.xpath("//p[@class='topics']")
@@ -25,10 +25,10 @@ def MetadataObjectForURL(url):
 	likes = float(page.xpath("//a[@class='plus']")[0].text_content())
 	dislikes = float(page.xpath("//a[@class='minus']")[0].text_content())
 	rating = abs((dislikes / likes * 10) - 10)
-	duration = page.xpath("//span[@itemprop='duration']/span[1]")[0].text_content().split(':')
+	duration = page.xpath("//div[@class='description']/p[3]/span[3]/span[1]")[0].text_content().split(':')
 	duration_ms = (int(duration[0]) * 60 + int(duration[1])) * 1000
 
-	originally_available_at = page.xpath("//span[@itemprop='uploadDate']/span[1]")[0].text_content()
+	originally_available_at = page.xpath("//div[@class='description']/p[3]/span[2]/span[1]")[0].text_content()
 	
 	for search, replace in months:
 		originally_available_at = originally_available_at.replace(search, replace)

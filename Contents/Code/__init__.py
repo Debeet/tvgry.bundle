@@ -158,11 +158,16 @@ def Topic(url, page_no):
 def MainPage(page_no, popular = False):
 	dir = ObjectContainer()
 	
+	post = None
 	if (page_no == 1):
-		HTTP.Headers['Cookie'] = 'typlisty=1' if popular else ''
+		post = {}
+		if popular:
+			post['typlisty'] = '1'
+		else:
+			post['typlisty'] = ''
 
 	page_url = BASE_URL + '/ajax/waypoint.asp?PART=' + str(page_no) if page_no > 1 else BASE_URL
-	page = HTML.ElementFromURL(page_url, encoding = 'cp1250', cacheTime = 0)
+	page = HTML.ElementFromURL(page_url, values = post, encoding = 'cp1250', cacheTime = 0)
 
 	for movie in page.xpath("//div[contains(@id, 'movie-cnt-c-')]"):
 		video_url = BASE_URL + movie.xpath(".//a[contains(@class, 'movie-link')]")[0].get('href')
